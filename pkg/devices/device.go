@@ -25,8 +25,36 @@ func (d *InputGamepad) Button(button int) util.RawValue {
 	return util.RawValue(d.Joy.Button(button))
 }
 
+// Hat returns two axis-like values per physical hat: even indexes are horizontal (left/right),
+// odd indexes are vertical (up/down). SDL hats are bitmasks, so we convert the bits into
+// the full RawValue range to match axes/buttons semantics.
 func (d *InputGamepad) Hat(hat int) util.RawValue {
-	return util.MapRange(util.RawValue(d.Joy.Hat(hat)), -1, 1, util.MinRaw, util.MaxRaw)
+	physicalHat := hat / 2
+	axisComponent := hat % 2
+
+	if physicalHat >= int(d.Joy.NumHats()) {
+		return util.ZeroRaw
+	}
+
+	state := d.Joy.Hat(physicalHat)
+
+	if axisComponent == 0 {
+		if state&sdl.HAT_LEFT != 0 {
+			return util.MinRaw
+		}
+		if state&sdl.HAT_RIGHT != 0 {
+			return util.MaxRaw
+		}
+		return util.ZeroRaw
+	}
+
+	if state&sdl.HAT_UP != 0 {
+		return util.MinRaw
+	}
+	if state&sdl.HAT_DOWN != 0 {
+		return util.MaxRaw
+	}
+	return util.ZeroRaw
 }
 
 func (d *InputGamepad) Close() {
@@ -45,7 +73,7 @@ func (d *InputGamepad) Buttons() int32 {
 }
 
 func (d *InputGamepad) Hats() int32 {
-	return int32(d.Joy.NumHats())
+	return int32(d.Joy.NumHats()) * 2
 }
 
 func NewDevice(joy *sdl.Joystick) InputGamepad {

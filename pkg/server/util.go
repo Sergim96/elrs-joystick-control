@@ -26,6 +26,8 @@ func DeviceStateAsString(inputStates *pb.GamepadInputsStates) string {
 			res[fmt.Sprintf("%s%d", "a", inputState.Index)] = inputState.Value
 		} else if inputState.Type == pb.GamepadInputType_BUTTON {
 			res[fmt.Sprintf("%s%d", "b", inputState.Index)] = inputState.Value
+		} else if inputState.Type == pb.GamepadInputType_HAT {
+			res[fmt.Sprintf("%s%d", "h", inputState.Index)] = inputState.Value
 		}
 	}
 

@@ -70,6 +70,7 @@ message GetGamepadStreamReq {
 enum GamepadInputType {
   AXIS = 0;
   BUTTON = 1;
+  HAT = 2;
 }
 
 message GamepadInputState {

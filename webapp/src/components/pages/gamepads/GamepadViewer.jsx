@@ -8,6 +8,7 @@ import PopupDialog from "../misc/PopupDialog";
 import {Typography} from "@mui/material";
 import {GamepadAxis, GamepadAxisSkeleton} from "./GamepadAxis";
 import {GamepadButton, GamepadButtonSkeleton} from "./GamepadButton";
+import {GamepadHat, GamepadHatSkeleton} from "./GamepadHat";
 import {PopOverRadioSelect} from "../misc/PopOverRadioSelect";
 import {HelpIconWithText} from "../../misc/HelpIconWithText";
 
@@ -24,6 +25,10 @@ export function RawAxisHelp() {
 
 export function RawButtonHelp() {
     return <HelpIconWithText style={{left: -5}} >{i18n("buttons-viewer-help")}</HelpIconWithText>;
+}
+
+export function RawHatHelp() {
+    return <HelpIconWithText style={{left: -5}} >{i18n("hats-viewer-help")}</HelpIconWithText>;
 }
 
 
@@ -79,6 +84,68 @@ export function ButtonsViewer({gamepad, buttonFormat, loading, onStreamDataRef})
         })()}
     </>;
 }
+
+export function HatsHeader({gamepad}) {
+
+    return <>
+        {(_ => {
+            if (gamepad.getHats()) {
+                return <Typography
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        justifyContent: 'flex-start',
+                        alignContent: 'center',
+                        flexWrap: 'nowrap',
+                        alignItems: 'center',
+                        marginTop: 25
+                    }}
+                    gutterBottom>{i18n("gamepad-viewer-hats")} <RawHatHelp/></Typography>
+            }
+        })()}
+    </>
+}
+
+const HatsViewer = function ({loading, gamepad, onStreamDataRef}) {
+    const [inputStateList, setInputStateList] = useState(null);
+    const hatsCount = gamepad.getHats();
+
+    useEffect(function () {
+        if (!hatsCount) {
+            onStreamDataRef.current = null;
+            return;
+        }
+        onStreamDataRef.current = setInputStateList
+    }, [hatsCount, onStreamDataRef]);
+
+    if (!hatsCount) {
+        return null;
+    }
+
+    return <>
+        {(_ => {
+            let hats = [];
+            if (loading || !inputStateList) {
+                for (let i = 0; i < hatsCount; i++) {
+                    hats.push(<GamepadHatSkeleton key={`${gamepad.getId()}-hat-${i}-skeleton`}/>)
+                }
+                return hats;
+            } else {
+                for (let i = 0; i < inputStateList.length; i++) {
+                    let input = inputStateList[i]
+                    if (input.getType() !== GamepadInputType.HAT) continue;
+                    hats.push(<GamepadHat
+                        key={`${gamepad.getId()}-hat-${input.getIndex()}`}
+                        index={input.getIndex()}
+                        value={input.getValue()}
+                        loading={loading}
+                    />)
+                }
+                return hats
+            }
+        })()}
+    </>
+};
 
 export function AxesHeader({gamepad, format, onChangeFormat}) {
 
@@ -147,6 +214,7 @@ export function GamepadViewer({gamepad, open, onClose}) {
     const streamRef = useRef();
     const axisViewerRef = useRef();
     const buttonsViewerRef = useRef();
+    const hatsViewerRef = useRef();
 
 
     const cancelStream = useCallback(function () {
@@ -163,6 +231,7 @@ export function GamepadViewer({gamepad, open, onClose}) {
             onStreamData: (data) => {
                 buttonsViewerRef?.current?.(data);
                 axisViewerRef?.current?.(data)
+                hatsViewerRef?.current?.(data)
             },
             onStreamError: (status) => {
                 showError(`${i18n("error-msg-gamepad-stream-closed")} ${status.details}`);
@@ -190,6 +259,8 @@ export function GamepadViewer({gamepad, open, onClose}) {
     return (<PopupDialog title={gamepad.getName()} open={open} onClose={() => handleClose()}>
         <AxesHeader gamepad={gamepad} format={axisFormat}  onChangeFormat={setAxisFormat} key={"axis-header"}/>
         <AxesViewer gamepad={gamepad} axisFormat={axisFormat} loading={loading} key={"axis-viewer"} onStreamDataRef={axisViewerRef}/>
+        <HatsHeader gamepad={gamepad} key={"hats-header"}/>
+        <HatsViewer gamepad={gamepad} loading={loading} key={"hats-viewer"} onStreamDataRef={hatsViewerRef}/>
         <ButtonsHeader gamepad={gamepad} format={buttonFormat}  onChangeFormat={setButtonFormat} key={"buttons-header"}/>
         <ButtonsViewer gamepad={gamepad} loading={loading} buttonFormat={buttonFormat} key={"buttons-viewer"} onStreamDataRef={buttonsViewerRef} />
 

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: FS-0.9-or-later
 
 import React, {useCallback, useEffect, useState} from 'react';
-import {Card, Skeleton, Typography} from "@mui/material";
+import {Card, Skeleton, Typography, SvgIcon} from "@mui/material";
 
 import Box from "@mui/material/Box";
 import AxisNode from "./inputs_config/nodes/AxisNode";
@@ -26,6 +26,11 @@ const cardStyle = {
         cursor: "pointer"
     }
 };
+
+const HatIcon = <SvgIcon>
+    <path fill="#656565"
+          d="M11 3h2v6h6v2h-6v6h-2v-6H5V9h6zM9 11v2h2v-2H9zm6 0v2h2v-2h-2z"/>
+</SvgIcon>;
 
 function GamepadCard({gamepad}) {
     const [open, setOpen] = React.useState(false);
@@ -70,7 +75,17 @@ function GamepadCard({gamepad}) {
                 }}>{`${gamepad.getName()}`}</Typography>
             </Box>
             <Box style={{width: "100%", alignContent: "center", textAlign: "center"}}>
-                {[[i18n("gamepad-card-axes-label"), gamepad.getAxes(), AxisNode.menuIcon], [i18n("gamepad-card-buttons-label"), gamepad.getButtons(), ButtonNode.menuIcon]].map(r => GamepadRow(r))}
+                {(() => {
+                    const rows = [
+                        [i18n("gamepad-card-axes-label"), gamepad.getAxes(), AxisNode.menuIcon],
+                        [i18n("gamepad-card-buttons-label"), gamepad.getButtons(), ButtonNode.menuIcon]
+                    ];
+                    const hatsCount = gamepad.getHats();
+                    if (typeof hatsCount === "number" && hatsCount > 0) {
+                        rows.push([i18n("gamepad-card-hats-label"), hatsCount, HatIcon]);
+                    }
+                    return rows.map(GamepadRow);
+                })()}
             </Box>
         </Card>
     </>);
@@ -148,4 +163,3 @@ export default function GamepadsPage({}) {
 GamepadsPage.id = "gamepads";
 GamepadsPage.title = i18n("main-menu-gamepads")
 GamepadsPage.menuIcon = GamepadNode.menuIcon
-

@@ -9,10 +9,14 @@ strings:
     Axes
   gamepad-viewer-buttons: |
     Buttons
+  gamepad-viewer-hats: |
+    Hats
   gamepad-card-axes-label: |
     axes
   gamepad-card-buttons-label: |
     buttons(s)
+  gamepad-card-hats-label: |
+    hat input(s)
   format-dshot-desc: |
     DSHOT (11 bit Unsigned Int)
   format-raw-desc: |
@@ -74,6 +78,19 @@ strings:
     The application only converts these RAW values to CRSF format
     at the very end, before writing them to the RF transmitter.
 
+  hats-viewer-help: |
+    Hat switches are read as two tiny axes (horizontal and vertical).
+    They only output `-1`, `0`, or `1` for each direction, where `-1`
+    is one direction, `1` the opposite, and `0` is centered.
+      
+      
+    Values shown here are normalized so the center is always `0`
+    regardless of the raw range exposed by the operating system.
+      
+      
+    Use hats to map quick camera or mode selections without consuming
+    the full travel of an analog axis.
+      
   channels-viewer-help: |
     Channel values used by ExpressLRS RF transmitters are always in CRSF format.
       

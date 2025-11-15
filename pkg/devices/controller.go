@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/dlsniper/debugger"
 	"github.com/kaack/elrs-joystick-control/pkg/proto/generated/pb"
+	"github.com/kaack/elrs-joystick-control/pkg/util"
 	"github.com/veandco/go-sdl2/sdl"
 	"gopkg.in/tomb.v2"
 )
@@ -58,39 +59,75 @@ func (c *Controller) Quit() {
 
 func (c *Controller) GetGamepadStates(device *InputGamepad, states *pb.GamepadInputsStates) *pb.GamepadInputsStates {
 
+	const (
+		hatRawMin    util.RawValue = -32767
+		hatRawMax    util.RawValue = 32767
+		hatOutputMin util.RawValue = -1
+		hatOutputMax util.RawValue = 1
+	)
+
 	axisNumber := 0
 	axesCount := int(device.Axes())
 	buttonNumber := 0
 	buttonsCount := int(device.Buttons())
+	hatNumber := 0
+	hatsCount := int(device.Hats())
+	totalInputs := axesCount + hatsCount + buttonsCount
+
+	if states != nil && len(states.InputsStates) != totalInputs {
+		states = nil
+	}
 
 	if states != nil {
+		buttonOffset := axesCount + hatsCount
 		for axisNumber = 0; axisNumber < axesCount; axisNumber++ {
-			states.InputsStates[axisNumber].Value = int32(device.Axis(axisNumber))
+			value := int32(device.Axis(axisNumber))
+			states.InputsStates[axisNumber].Value = value
+			fmt.Printf("controller axis %d value %d\n", axisNumber, value)
 		}
-
+		for hatNumber = 0; hatNumber < hatsCount; hatNumber++ {
+			value := int32(util.MapRange(device.Hat(hatNumber), hatRawMin, hatRawMax, hatOutputMin, hatOutputMax))
+			states.InputsStates[axesCount+hatNumber].Value = value
+			fmt.Printf("controller hat %d value %d\n", hatNumber, value)
+		}
 		for buttonNumber = 0; buttonNumber < buttonsCount; buttonNumber++ {
-			states.InputsStates[axesCount+buttonNumber].Value = int32(device.Button(buttonNumber))
+			value := int32(device.Button(buttonNumber))
+			states.InputsStates[buttonOffset+buttonNumber].Value = value
+			fmt.Printf("controller button %d value %d\n", buttonNumber, value)
 		}
-
 		return states
 	}
 
-	inputStates := make([]*pb.GamepadInputState, axesCount+buttonsCount)
+	inputStates := make([]*pb.GamepadInputState, totalInputs)
 
 	for axisNumber = 0; axisNumber < axesCount; axisNumber++ {
+		value := int32(device.Axis(axisNumber))
 		inputStates[axisNumber] = &pb.GamepadInputState{
 			Type:  pb.GamepadInputType_AXIS,
 			Index: int32(axisNumber),
-			Value: int32(device.Axis(axisNumber)),
+			Value: value,
 		}
+		fmt.Printf("controller axis %d value %d\n", axisNumber, value)
+	}
+
+	for hatNumber = 0; hatNumber < hatsCount; hatNumber++ {
+		value := int32(util.MapRange(device.Hat(hatNumber), hatRawMin, hatRawMax, hatOutputMin, hatOutputMax))
+		inputStates[axesCount+hatNumber] = &pb.GamepadInputState{
+			Type:  pb.GamepadInputType_HAT,
+			Index: int32(hatNumber),
+			Value: value,
+		}
+		fmt.Printf("controller hat %d value %d\n", hatNumber, value)
 	}
 
 	for buttonNumber = 0; buttonNumber < buttonsCount; buttonNumber++ {
-		inputStates[axesCount+buttonNumber] = &pb.GamepadInputState{
+		value := int32(device.Button(buttonNumber))
+		inputStates[axesCount+hatsCount+buttonNumber] = &pb.GamepadInputState{
 			Type:  pb.GamepadInputType_BUTTON,
 			Index: int32(buttonNumber),
-			Value: int32(device.Button(buttonNumber)),
+			Value: value,
 		}
+		fmt.Printf("controller button %d value %d\n", buttonNumber, value)
 	}
 
 	states = &pb.GamepadInputsStates{InputsStates: inputStates}

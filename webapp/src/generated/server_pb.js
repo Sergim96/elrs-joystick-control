@@ -15749,7 +15749,8 @@ proto.JoystickControl.GetCRSFDeviceLinkStatusRes.prototype.hasLinkStatus = funct
  */
 proto.JoystickControl.GamepadInputType = {
   AXIS: 0,
-  BUTTON: 1
+  BUTTON: 1,
+  HAT: 2
 };
 
 /**

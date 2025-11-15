@@ -33,6 +33,15 @@ export const MockGamepadStream = function ({gamepad}) {
                 statesList.push(inputState);
             }
 
+            let hats = this._gamepad.getHats();
+            for (let i = 0; i < hats.length; i++) {
+                let inputState = new GamepadInputState();
+                inputState.setType(GamepadInputType.HAT);
+                inputState.setIndex(i);
+                inputState.setValue(hats[i]);
+                statesList.push(inputState);
+            }
+
             let res = new GamepadInputsStates();
             res.setInputsStatesList(statesList);
             this._emitter.emit("data", res);

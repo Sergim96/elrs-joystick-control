@@ -30,6 +30,7 @@ type GamepadInputType int32
 const (
 	GamepadInputType_AXIS   GamepadInputType = 0
 	GamepadInputType_BUTTON GamepadInputType = 1
+	GamepadInputType_HAT    GamepadInputType = 2
 )
 
 // Enum value maps for GamepadInputType.
@@ -37,10 +38,12 @@ var (
 	GamepadInputType_name = map[int32]string{
 		0: "AXIS",
 		1: "BUTTON",
+		2: "HAT",
 	}
 	GamepadInputType_value = map[string]int32{
 		"AXIS":   0,
 		"BUTTON": 1,
+		"HAT":    2,
 	}
 )
 
