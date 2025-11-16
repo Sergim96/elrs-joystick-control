@@ -64,7 +64,8 @@ func (c *Controller) EvalLoop() error {
 
 	var config *Config
 	//goland:noinspection GoPreferNilSlice
-	holders := []*IOHolder{}
+	txHolders := []*IOHolder{}
+	audioHolders := []*IOHolder{}
 
 	EvalAll(c.Config)
 
@@ -77,15 +78,25 @@ Loop:
 
 		case config = <-c.ConfigEventChan:
 			if config == nil {
-				holders = []*IOHolder{}
+				txHolders = []*IOHolder{}
+				audioHolders = []*IOHolder{}
 				c.EvalDataMap = &map[string]*[16]util.CRSFValue{} //delete all existing entries
 				continue
 			}
 
-			holders = maps.Values(config.GetTransmitters())
+			txHolders = maps.Values(config.GetTransmitters())
+			audioHolders = []*IOHolder{}
+			for _, holder := range config.IOMap {
+				if holder == nil {
+					continue
+				}
+				if _, ok := holder.IO.(*InputAudio); ok {
+					audioHolders = append(audioHolders, holder)
+				}
+			}
 			c.EvalDataMap = &map[string]*[16]util.CRSFValue{} //delete all existing entries
 
-			for _, holder := range holders {
+			for _, holder := range txHolders {
 				if tx, ok := holder.IO.(*OutputTransmitter); ok {
 					(*c.EvalDataMap)[tx.Transmitter.Port] = tx.Values
 				}
@@ -102,13 +113,21 @@ Loop:
 				c.alertEvalChan()
 			}
 		case _ = <-c.deviceCtl.DeviceEventChan:
-			for _, holder := range holders {
+			if config == nil {
+				continue
+			}
+
+			for _, holder := range txHolders {
 				if tx, ok := holder.IO.(*OutputTransmitter); ok {
 					tx.Eval(holder.Config)
-					c.alertEvalChan()
 				}
-				//fmt.Printf("eval: %v\n", (*c.ChannelsDataMap)[sport.TX.Port])
 			}
+
+			for _, holder := range audioHolders {
+				holder.Eval(config)
+			}
+
+			c.alertEvalChan()
 		}
 	}
 	return nil
