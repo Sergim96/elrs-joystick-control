@@ -7,6 +7,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	ac "github.com/kaack/elrs-joystick-control/pkg/audio"
 	"github.com/kaack/elrs-joystick-control/pkg/client"
 	cc "github.com/kaack/elrs-joystick-control/pkg/config"
 	dc "github.com/kaack/elrs-joystick-control/pkg/devices"
@@ -38,6 +39,9 @@ func main() {
 	configFilePath := new(string)
 	flag.StringVar(configFilePath, "config-file-path", "", "config json file path")
 
+	audioDir := new(string)
+	flag.StringVar(audioDir, "audio-dir", "./audio", "Directory that holds audio prompts (mp3 files)")
+
 	disableWebUI := new(bool)
 	flag.BoolVar(disableWebUI, "disable-web-ui", false, "disable the Web-UI HTTP server")
 
@@ -46,15 +50,17 @@ func main() {
 	grpcServer := grpc.NewServer([]grpc.ServerOption{}...)
 	reflection.Register(grpcServer)
 
-	httpCtl := hc.NewCtl(*webAppPort, grpcServer)
-	defer httpCtl.Quit()
+	audioCtl := ac.NewCtl(*audioDir)
+	defer audioCtl.Quit()
 
 	devicesCtl := dc.NewCtl()
 	defer devicesCtl.Quit()
 
-	configCtl := cc.NewCtl(devicesCtl)
-
+	configCtl := cc.NewCtl(devicesCtl, audioCtl)
 	defer configCtl.Quit()
+
+	httpCtl := hc.NewCtl(*webAppPort, grpcServer, audioCtl)
+	defer httpCtl.Quit()
 
 	serialCtl := sc.NewCtl()
 	defer serialCtl.Quit()

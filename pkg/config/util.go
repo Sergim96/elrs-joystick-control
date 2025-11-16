@@ -92,6 +92,7 @@ func _NewTypesMap() (*map[string]reflect.Type, error) {
 		reflect.TypeOf(OutputTransmitter{}),
 		reflect.TypeOf(InputGamepad{}),
 		reflect.TypeOf(InputChannel{}),
+		reflect.TypeOf(InputAudio{}),
 		reflect.TypeOf(InputAdd{}),
 		reflect.TypeOf(InputSubtract{}),
 		reflect.TypeOf(InputMin{}),

@@ -33,6 +33,37 @@ export const getTransmitters = async function () {
     return res.getTransmittersList();
 };
 
+const MOCK_AUDIO_MESSAGES = [
+    "Altitude!.mp3",
+    "Bingo!.mp3",
+    "deedle_deedle.mp3",
+    "Flight Controls!.mp3",
+    "Fuel Low!.mp3",
+    "Pull up! Pull up!.mp3",
+    "RWR.mp3"
+];
+
+export const getAudioMessages = async function () {
+    if (isMockBackend()) {
+        return [...MOCK_AUDIO_MESSAGES];
+    }
+
+    let response = await fetch(`${getServerUrl()}/api/audio/messages`, {
+        headers: {"Accept": "application/json"}
+    });
+
+    if (!response.ok) {
+        throw new Error(`failed to load audio messages. status ${response.status}`);
+    }
+
+    let payload = await response.json();
+    if (!payload || !Array.isArray(payload.files)) {
+        return [];
+    }
+
+    return payload.files.filter(file => typeof file === "string");
+};
+
 
 export const setConfig = async function (config) {
     let client = getClient(getServerUrl(), null, null);

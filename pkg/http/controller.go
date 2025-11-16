@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
+	ac "github.com/kaack/elrs-joystick-control/pkg/audio"
 	"github.com/kaack/elrs-joystick-control/webapp"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -24,12 +25,14 @@ type Controller struct {
 	httpTomb   *tomb.Tomb
 	echo       *echo.Echo
 	gRPCServer *grpc.Server
+	audioCtl   *ac.Controller
 }
 
-func NewCtl(webAppPort int, gRPCServer *grpc.Server) *Controller {
+func NewCtl(webAppPort int, gRPCServer *grpc.Server, audioCtl *ac.Controller) *Controller {
 	httpCtl := &Controller{
 		webAppPort: webAppPort,
 		gRPCServer: gRPCServer,
+		audioCtl:   audioCtl,
 	}
 
 	if err := httpCtl.Init(); err != nil {
@@ -80,6 +83,8 @@ func (c *Controller) NewEcho(err error) (*echo.Echo, error) {
 		Filesystem: httpFS,
 		HTML5:      true,
 	}))
+
+	c.registerRoutes(echoHandler)
 
 	echoServer.HideBanner = true
 	return echoServer, nil
@@ -135,4 +140,19 @@ func (c *Controller) Quit() {
 	if err := c.Stop(); err != nil {
 		fmt.Printf("error while exiting http controller. %s\n", err.Error())
 	}
+}
+
+func (c *Controller) registerRoutes(server *echo.Echo) {
+	server.GET("/api/audio/messages", c.getAudioMessages)
+}
+
+func (c *Controller) getAudioMessages(ctx echo.Context) error {
+	files := []string{}
+	if c.audioCtl != nil {
+		var err error
+		if files, err = c.audioCtl.ListMessages(); err != nil {
+			return ctx.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
+	}
+	return ctx.JSON(http.StatusOK, map[string][]string{"files": files})
 }

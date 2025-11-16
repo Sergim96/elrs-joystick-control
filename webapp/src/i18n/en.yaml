@@ -156,6 +156,8 @@ strings:
     Could not load CRSF devices list. Please verify server URL in settings.
   error-msg-gamepads-not-loaded: |
     Could not load gamepads list. Please verify server URL in settings.
+  error-msg-audio-files-not-loaded: |
+    Could not load audio messages list. Please verify server URL in settings.
   error-msg-gamepads-not-detected: |
     No gamepad devices connected, will wait ...
   error-msg-telemetry-not-started: |

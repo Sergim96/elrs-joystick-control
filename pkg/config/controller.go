@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	ac "github.com/kaack/elrs-joystick-control/pkg/audio"
 	dc "github.com/kaack/elrs-joystick-control/pkg/devices"
 	"github.com/kaack/elrs-joystick-control/pkg/proto/generated/pb"
 	"github.com/kaack/elrs-joystick-control/pkg/util"
@@ -18,6 +19,7 @@ type Controller struct {
 	Config *Config `json:"config"`
 
 	deviceCtl   *dc.Controller
+	audioCtl    *ac.Controller
 	EvalDataMap *map[string]*[16]util.CRSFValue `json:"-"`
 	EvalNoData  *[16]util.CRSFValue
 	EvalCenter  *[16]util.CRSFValue
@@ -36,9 +38,10 @@ type Controller struct {
 	ConfigEventChan chan *Config
 }
 
-func NewCtl(dc *dc.Controller) *Controller {
+func NewCtl(dc *dc.Controller, ac *ac.Controller) *Controller {
 	configCtl := &Controller{
 		deviceCtl:  dc,
+		audioCtl:   ac,
 		EvalNoData: &[16]util.CRSFValue{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 		EvalCenter: &[16]util.CRSFValue{992, 992, 992, 992, 992, 992, 992, 992, 992, 992, 992, 992, 992, 992, 992, 992},
 	}

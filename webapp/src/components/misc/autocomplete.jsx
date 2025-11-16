@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-License-Identifier: FS-0.9-or-later
 
-import {getGamepads, getTransmitters} from "./server";
+import {getAudioMessages, getGamepads, getTransmitters} from "./server";
 import {showError} from "./notifications";
 import i18n from "./I18n";
 
@@ -84,6 +84,19 @@ export const AutoCompleteFunctions = {
             ["16384", "RAW QT3 (16384)"],
             ["32767", "RAW Max (32767)"]
         ]);
+    }, 'audio-files': async () => {
+        let files = new Map();
+        try {
+            for (let fileName of await getAudioMessages()) {
+                files.set(fileName, fileName);
+            }
+        } catch (e) {
+            showError(`${i18n("error-msg-audio-files-not-loaded")}`);
+        }
+        if (files.size === 0) {
+            files.set("", "No audio files found");
+        }
+        return files;
     }, 'boolean': async () => {
         return new Map([
             ["false", "False"],

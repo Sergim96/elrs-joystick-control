@@ -64,6 +64,7 @@ definitions:
           - button
           - hat
           - trim
+          - audio
     dependentSchemas:
       if:
         $ref: '#/definitions/if'
@@ -117,6 +118,8 @@ definitions:
         $ref: '#/definitions/button'
       hat:
         $ref: '#/definitions/hat'
+      audio:
+        $ref: '#/definitions/audio'
     unevaluatedProperties: true
   hat:
     type: object
@@ -158,6 +161,42 @@ definitions:
             description: Multiply output value by -1
             type: boolean
             default: false
+        unevaluatedProperties: true
+    unevaluatedProperties: true
+  audio:
+    type: object
+    required:
+      - type
+      - audio
+    properties:
+      type:
+        type: string
+        enum:
+          - audio
+      audio:
+        type: object
+        title: Audio Track
+        description: |
+          Plays an audio prompt whenever the input value transitions from an inactive (low) value to an active (high) value.
+        required:
+          - input
+          - track
+        properties:
+          label:
+            title: Label
+            description: A short descriptive name
+            type: string
+          track:
+            title: Audio track
+            description: MP3 file to play
+            type: string
+            $meta:
+              autocomplete: audio-files
+          input:
+            title: Trigger input
+            $meta:
+              handle: in1
+            $ref: '#/definitions/input'
         unevaluatedProperties: true
     unevaluatedProperties: true
   button:
@@ -205,6 +244,18 @@ definitions:
             $meta:
               autocomplete: raw
             default: 0
+          active_audio_file:
+            title: Active audio message
+            description: Audio file to play when the button becomes active
+            type: string
+            $meta:
+              autocomplete: audio-files
+          inactive_audio_file:
+            title: Inactive audio message
+            description: Audio file to play when the button becomes inactive
+            type: string
+            $meta:
+              autocomplete: audio-files
           input:
             title: Gamepad
             $meta:
