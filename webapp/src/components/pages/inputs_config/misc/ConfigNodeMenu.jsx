@@ -29,6 +29,7 @@ import NumberNode from "../nodes/NumberNode";
 import GamepadNode from "../nodes/GamepadNode";
 import ButtonNode from "../nodes/ButtonNode";
 import AxisNode from "../nodes/AxisNode";
+import HatNode from "../nodes/HatNode";
 import ChannelNode from "../nodes/ChannelNode";
 import TransmitterNode from "../nodes/TransmitterNode";
 import EqualsNode from "../nodes/EqualsNode";
@@ -147,6 +148,7 @@ const ConfigNodeMenu = () => {
         {type: "node", node: GamepadNode},
         {type: "node", node: ButtonNode},
         {type: "node", node: AxisNode},
+        {type: "node", node: HatNode},
         {
             type: "menu",
             key: "logic",

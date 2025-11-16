@@ -18,6 +18,7 @@ import ChannelNode from "./ChannelNode";
 import TransmitterNode from "./TransmitterNode";
 import ButtonNode from "./ButtonNode";
 import AxisNode from "./AxisNode";
+import HatNode from "./HatNode";
 import SwitchNode from "./SwitchNode";
 import CaseInputNode from "./CaseInputNode";
 import LinearNode from "./LinearNode";
@@ -51,6 +52,7 @@ export const nodeTypes = () => {
         [TransmitterNode.type]: TransmitterNode,
         [ButtonNode.type]: ButtonNode,
         [AxisNode.type]: AxisNode,
+        [HatNode.type]: HatNode,
         [SwitchNode.type]: SwitchNode,
         [CaseInputNode.type]: CaseInputNode,
         [LinearNode.type]: LinearNode,
