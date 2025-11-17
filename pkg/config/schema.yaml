@@ -192,6 +192,18 @@ definitions:
             type: string
             $meta:
               autocomplete: audio-files
+          min_value:
+            title: Activation min value
+            description: Minimum input value (inclusive) that triggers the audio track
+            type: integer
+            $meta:
+              autocomplete: raw
+          max_value:
+            title: Activation max value
+            description: Maximum input value (inclusive) that triggers the audio track
+            type: integer
+            $meta:
+              autocomplete: raw
           input:
             title: Trigger input
             $meta:

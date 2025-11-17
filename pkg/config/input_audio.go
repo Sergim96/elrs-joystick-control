@@ -15,6 +15,8 @@ import (
 type AudioT struct {
 	Input *IOHolder `json:"input"`
 	Track string    `json:"track"`
+	Min   *int32    `json:"min_value"`
+	Max   *int32    `json:"max_value"`
 }
 
 type InputAudio struct {
@@ -65,7 +67,7 @@ func (i *InputAudio) eval(c *Config) (src IOType, out util.RawValue, ch util.Cha
 
 	fmt.Printf("audio node [%s]: input value=%d\n", i.Id, out)
 
-	isActive := out != util.ZeroRaw
+	isActive := i.isActiveValue(out)
 	if isActive && !i.lastActive {
 		track := strings.TrimSpace(i.Audio.Track)
 		if track != "" && c != nil && c.Ctl != nil && c.Ctl.audioCtl != nil {
@@ -103,4 +105,27 @@ func (i *InputAudio) InputId() string {
 
 func (i *InputAudio) Children() (out *[]*IOHolder) {
 	return GetChildren(i.Audio.Input, nil)
+}
+
+func (i *InputAudio) isActiveValue(value util.RawValue) bool {
+	if i.Audio.Min == nil && i.Audio.Max == nil {
+		return value != util.ZeroRaw
+	}
+
+	minVal := util.MinRaw
+	maxVal := util.MaxRaw
+
+	if i.Audio.Min != nil {
+		minVal = util.RawValue(*i.Audio.Min)
+	}
+
+	if i.Audio.Max != nil {
+		maxVal = util.RawValue(*i.Audio.Max)
+	}
+
+	if minVal > maxVal {
+		minVal, maxVal = maxVal, minVal
+	}
+
+	return value >= minVal && value <= maxVal
 }
