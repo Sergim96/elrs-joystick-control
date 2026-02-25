@@ -13,6 +13,8 @@ import (
 	"github.com/kaack/elrs-joystick-control/pkg/proto/generated/pb"
 	"github.com/kaack/elrs-joystick-control/pkg/util"
 	"gopkg.in/tomb.v2"
+	"sync"
+	"time"
 )
 
 type Controller struct {
@@ -36,6 +38,9 @@ type Controller struct {
 	StreamEventChan  chan int32
 
 	ConfigEventChan chan *Config
+
+	telemetryAlerts     []*telemetryAlertRuntime
+	telemetryAlertsLock sync.Mutex
 }
 
 func NewCtl(dc *dc.Controller, ac *ac.Controller) *Controller {
@@ -99,6 +104,7 @@ func (c *Controller) UnmarshalJSON(configJson []byte) error {
 
 	//propagate the config controller to all children
 	c.Config.Ctl = c
+	c.refreshTelemetryAlerts()
 
 	return nil
 }
@@ -189,6 +195,7 @@ func (c *Controller) GetEvalStates(states *pb.EvalStates) *pb.EvalStates {
 func (c *Controller) SetConfig(config *Config) {
 	config.Ctl = c
 	c.Config = config
+	c.refreshTelemetryAlerts()
 	c.alertConfigChan()
 }
 
@@ -203,4 +210,47 @@ func (c *Controller) alertConfigChan() {
 
 func (c *Controller) initConfigChan() {
 	c.ConfigEventChan = make(chan *Config)
+}
+
+func (c *Controller) refreshTelemetryAlerts() {
+	alerts := []*telemetryAlertRuntime{}
+	if c.Config != nil {
+		for _, holder := range c.Config.IOMap {
+			if holder == nil {
+				continue
+			}
+			if alert, ok := holder.IO.(*InputTelemetryAlert); ok {
+				alerts = append(alerts, newTelemetryAlertRuntime(alert))
+			}
+		}
+	}
+
+	c.telemetryAlertsLock.Lock()
+	c.telemetryAlerts = alerts
+	c.telemetryAlertsLock.Unlock()
+}
+
+func (c *Controller) HandleTelemetry(telemetry *pb.Telemetry) {
+	if telemetry == nil {
+		return
+	}
+
+	c.telemetryAlertsLock.Lock()
+	defer c.telemetryAlertsLock.Unlock()
+
+	if len(c.telemetryAlerts) == 0 {
+		return
+	}
+
+	now := time.Now()
+	for _, runtime := range c.telemetryAlerts {
+		if runtime == nil || runtime.alert == nil {
+			continue
+		}
+		value, ok := telemetryValueFromProto(runtime.alert.Telemetry.Source, telemetry)
+		if !ok {
+			continue
+		}
+		runtime.evaluate(value, now, c.audioCtl)
+	}
 }

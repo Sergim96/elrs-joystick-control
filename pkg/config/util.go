@@ -87,6 +87,7 @@ func _NewTypesMap() (*map[string]reflect.Type, error) {
 		reflect.TypeOf(InputCase{}),
 		reflect.TypeOf(InputAxis{}),
 		reflect.TypeOf(InputButton{}),
+		reflect.TypeOf(InputTelemetryAlert{}),
 		reflect.TypeOf(InputHat{}),
 		reflect.TypeOf(InputSwitch{}),
 		reflect.TypeOf(OutputTransmitter{}),

@@ -65,6 +65,7 @@ definitions:
           - hat
           - trim
           - audio
+          - telemetry_alert
     dependentSchemas:
       if:
         $ref: '#/definitions/if'
@@ -120,6 +121,8 @@ definitions:
         $ref: '#/definitions/hat'
       audio:
         $ref: '#/definitions/audio'
+      telemetry_alert:
+        $ref: '#/definitions/telemetry_alert'
     unevaluatedProperties: true
   hat:
     type: object
@@ -209,6 +212,94 @@ definitions:
             $meta:
               handle: in1
             $ref: '#/definitions/input'
+        unevaluatedProperties: true
+    unevaluatedProperties: true
+  telemetry_alert:
+    type: object
+    required:
+      - type
+      - telemetry_alert
+    properties:
+      type:
+        type: string
+        enum:
+          - telemetry_alert
+      telemetry_alert:
+        type: object
+        title: Telemetry Alert
+        description: |
+          Plays an audio prompt when a telemetry value crosses a threshold.
+        required:
+          - source
+          - comparator
+          - threshold
+          - track
+        properties:
+          label:
+            title: Label
+            description: A short descriptive name
+            type: string
+          source:
+            title: Telemetry value
+            description: Telemetry value to monitor
+            type: string
+            enum:
+              - battery_voltage
+              - battery_current
+              - battery_fuel
+              - battery_remaining
+              - attitude_pitch
+              - attitude_roll
+              - attitude_yaw
+              - gps_ground_speed
+              - gps_heading
+              - gps_altitude
+              - gps_satellites
+              - link_stats_uplink_rssi1
+              - link_stats_uplink_rssi2
+              - link_stats_uplink_link_quality
+              - link_stats_uplink_snr
+              - link_stats_uplink_power
+              - link_stats_downlink_rssi
+              - link_stats_downlink_link_quality
+              - link_stats_downlink_snr
+              - link_tx_downlink_rssi
+              - link_tx_uplink_power
+              - link_tx_uplink_fps
+              - link_rx_uplink_rssi
+              - link_rx_downlink_power
+              - barometer_altitude
+              - variometer_speed
+              - barometer_variometer_altitude
+              - barometer_variometer_vertical_speed
+              - sync_rate
+              - sync_offset
+            $meta:
+              autocomplete: telemetry-sources
+          comparator:
+            title: Condition
+            description: Comparison used to trigger the alert
+            type: string
+            enum:
+              - above
+              - below
+            $meta:
+              autocomplete: telemetry-comparators
+          threshold:
+            title: Threshold
+            description: Trigger threshold (RAW value)
+            type: number
+          cooldown_ms:
+            title: Repeat delay
+            description: Minimum milliseconds between repeated alerts while the condition remains active (0 disables repeats)
+            type: integer
+            default: 0
+          track:
+            title: Audio track
+            description: MP3 file to play
+            type: string
+            $meta:
+              autocomplete: audio-files
         unevaluatedProperties: true
     unevaluatedProperties: true
   button:

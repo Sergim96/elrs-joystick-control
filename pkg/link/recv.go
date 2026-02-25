@@ -106,7 +106,12 @@ Loop:
 				//fmt.Printf("(recv-loop) %s\n", tFrame)
 				c.DeviceStatusBroadcaster.Broadcast(tFrame.Proto())
 			case telem.TelemSyncType:
-				c.TelemetryBroadcaster.Broadcast(tFrame.Proto())
+				if proto := tFrame.Proto(); proto != nil {
+					c.TelemetryBroadcaster.Broadcast(proto)
+					if c.configCtl != nil {
+						c.configCtl.HandleTelemetry(proto)
+					}
+				}
 				sendChan <- &tFrame
 			case telem.TelemGPSType,
 				telem.TelemLinkStatsType,           //ELRS only (originates from RX)
@@ -118,8 +123,12 @@ Loop:
 				telem.TelemBarometerType,           //TBS only
 				telem.TelemVariometerType,          //TBS Only
 				telem.TelemBarometerVariometerType: // ELRS only
-				//fmt.Printf("(recv-loop) %s\n", tFrame)
-				c.TelemetryBroadcaster.Broadcast(tFrame.Proto())
+				if proto := tFrame.Proto(); proto != nil {
+					c.TelemetryBroadcaster.Broadcast(proto)
+					if c.configCtl != nil {
+						c.configCtl.HandleTelemetry(proto)
+					}
+				}
 			case telem.TelemDeviceInfoExtType:
 				//fmt.Printf("(recv-loop) %s\n", tFrame)
 				c.DeviceInfoBroadcaster.Broadcast(tFrame.Proto())

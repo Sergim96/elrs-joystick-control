@@ -9,6 +9,9 @@ export const isBooleanField = function (fieldDef) {
 export const isIntegerField = function (fieldDef) {
     return fieldDef.type === "integer"
 };
+export const isNumberField = function (fieldDef) {
+    return fieldDef.type === "number"
+};
 export const isArrayOfInputField = function (fieldDef) {
     return fieldDef.type === "array" && fieldDef?.items?.["$ref"] === INPUT_TYPE;
 };

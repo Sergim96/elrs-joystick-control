@@ -31,6 +31,7 @@ import ButtonNode from "../nodes/ButtonNode";
 import AxisNode from "../nodes/AxisNode";
 import HatNode from "../nodes/HatNode";
 import AudioNode from "../nodes/AudioNode";
+import TelemetryAlertNode from "../nodes/TelemetryAlertNode";
 import ChannelNode from "../nodes/ChannelNode";
 import TransmitterNode from "../nodes/TransmitterNode";
 import EqualsNode from "../nodes/EqualsNode";
@@ -150,6 +151,7 @@ const ConfigNodeMenu = () => {
         {type: "node", node: ButtonNode},
         {type: "node", node: AxisNode},
         {type: "node", node: HatNode},
+        {type: "node", node: TelemetryAlertNode},
         {type: "node", node: AudioNode},
         {
             type: "menu",

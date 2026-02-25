@@ -19,6 +19,7 @@ import TransmitterNode from "./TransmitterNode";
 import ButtonNode from "./ButtonNode";
 import AxisNode from "./AxisNode";
 import HatNode from "./HatNode";
+import TelemetryAlertNode from "./TelemetryAlertNode";
 import AudioNode from "./AudioNode";
 import SwitchNode from "./SwitchNode";
 import CaseInputNode from "./CaseInputNode";
@@ -54,6 +55,7 @@ export const nodeTypes = () => {
         [ButtonNode.type]: ButtonNode,
         [AxisNode.type]: AxisNode,
         [HatNode.type]: HatNode,
+        [TelemetryAlertNode.type]: TelemetryAlertNode,
         [AudioNode.type]: AudioNode,
         [SwitchNode.type]: SwitchNode,
         [CaseInputNode.type]: CaseInputNode,

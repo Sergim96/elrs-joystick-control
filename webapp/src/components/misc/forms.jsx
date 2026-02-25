@@ -60,6 +60,22 @@ export function generateIntegerForm({fieldDef, fieldName}) {
     }
 }
 
+export function generateNumberForm({fieldDef, fieldName}) {
+    let autocomplete = getFieldAutoCompleteFunction(fieldDef);
+
+    let defaultValue = fieldDef?.default;
+    defaultValue = typeof defaultValue === "number" ? `${defaultValue}` : null;
+
+    return {
+        type: autocomplete ? "auto-complete" : "text",
+        key: fieldName,
+        label: fieldDef?.title || "",
+        help: fieldDef?.description,
+        default: defaultValue,
+        fetchOptionsMap: autocomplete
+    }
+}
+
 export function generateBooleanForm({fieldDef, fieldName}) {
     let autocomplete = getFieldAutoCompleteFunction(fieldDef) || AutoCompleteFunctions.boolean;
 

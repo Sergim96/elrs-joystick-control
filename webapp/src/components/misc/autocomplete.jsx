@@ -97,6 +97,44 @@ export const AutoCompleteFunctions = {
             files.set("", "No audio files found");
         }
         return files;
+    }, 'telemetry-comparators': async () => {
+        return new Map([
+            ["above", "Above threshold"],
+            ["below", "Below threshold"]
+        ]);
+    }, 'telemetry-sources': async () => {
+        return new Map([
+            ["battery_voltage", "Battery voltage (V)"],
+            ["battery_current", "Battery current (A)"],
+            ["battery_fuel", "Battery fuel (%)"],
+            ["battery_remaining", "Battery remaining (%)"],
+            ["attitude_pitch", "Attitude pitch (deg)"],
+            ["attitude_roll", "Attitude roll (deg)"],
+            ["attitude_yaw", "Attitude yaw (deg)"],
+            ["gps_ground_speed", "GPS ground speed"],
+            ["gps_heading", "GPS heading"],
+            ["gps_altitude", "GPS altitude"],
+            ["gps_satellites", "GPS satellites"],
+            ["link_stats_uplink_rssi1", "Link stats uplink RSSI1"],
+            ["link_stats_uplink_rssi2", "Link stats uplink RSSI2"],
+            ["link_stats_uplink_link_quality", "Link stats uplink LQ"],
+            ["link_stats_uplink_snr", "Link stats uplink SNR"],
+            ["link_stats_uplink_power", "Link stats uplink power"],
+            ["link_stats_downlink_rssi", "Link stats downlink RSSI"],
+            ["link_stats_downlink_link_quality", "Link stats downlink LQ"],
+            ["link_stats_downlink_snr", "Link stats downlink SNR"],
+            ["link_tx_downlink_rssi", "Link TX downlink RSSI"],
+            ["link_tx_uplink_power", "Link TX uplink power"],
+            ["link_tx_uplink_fps", "Link TX uplink FPS"],
+            ["link_rx_uplink_rssi", "Link RX uplink RSSI"],
+            ["link_rx_downlink_power", "Link RX downlink power"],
+            ["barometer_altitude", "Barometer altitude"],
+            ["variometer_speed", "Variometer speed"],
+            ["barometer_variometer_altitude", "Barometer/Variometer altitude"],
+            ["barometer_variometer_vertical_speed", "Barometer/Variometer vertical speed"],
+            ["sync_rate", "Sync rate"],
+            ["sync_offset", "Sync offset"]
+        ]);
     }, 'boolean': async () => {
         return new Map([
             ["false", "False"],

@@ -5,19 +5,36 @@
 import React from 'react';
 
 import {
-    generateArrayOfIntegerForm, generateBooleanForm, generateIntegerForm, generateIntegerMapForm, generateStringForm
+    generateArrayOfIntegerForm,
+    generateBooleanForm,
+    generateIntegerForm,
+    generateIntegerMapForm,
+    generateNumberForm,
+    generateStringForm
 } from "../../../misc/forms";
 import {
     getNodeSchema,
 } from "./schema";
 import {
-    isArrayOfInteger, isBooleanField, isIntegerField, isIntegerMapField, isStringField
+    isArrayOfInteger,
+    isBooleanField,
+    isIntegerField,
+    isIntegerMapField,
+    isNumberField,
+    isStringField
 } from "../../../misc/field-checks";
 import {NodeSettings} from "../../../misc/NodeSettings";
 import {nodeType} from "../nodes/constants";
 
 function InputNodeSettings({node, data, onDismount}) {
-    let generators = [[isStringField, generateStringForm], [isIntegerField, generateIntegerForm], [isBooleanField, generateBooleanForm], [isIntegerMapField, generateIntegerMapForm], [isArrayOfInteger, generateArrayOfIntegerForm]];
+    let generators = [
+        [isStringField, generateStringForm],
+        [isIntegerField, generateIntegerForm],
+        [isNumberField, generateNumberForm],
+        [isBooleanField, generateBooleanForm],
+        [isIntegerMapField, generateIntegerMapForm],
+        [isArrayOfInteger, generateArrayOfIntegerForm]
+    ];
 
     return (<NodeSettings node={node} data={data} onDismount={onDismount} generators={generators} nodeSchema={getNodeSchema(node.type)} nodeClass={nodeType(node.type)}/>);
 }
