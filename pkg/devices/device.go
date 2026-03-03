@@ -8,20 +8,47 @@ import (
 	"encoding/json"
 	"github.com/kaack/elrs-joystick-control/pkg/util"
 	"github.com/veandco/go-sdl2/sdl"
+	"sync"
 )
 
 type InputGamepad struct {
 	Id   string `json:"id"`
 	Name string `json:"name"`
 
-	Joy *sdl.Joystick `json:"-"`
+	Joy     *sdl.Joystick `json:"-"`
+	virtual *virtualState `json:"-"`
+}
+
+type virtualState struct {
+	mu      sync.RWMutex
+	axes    []util.RawValue
+	buttons []util.RawValue
+	hats    []util.RawValue
 }
 
 func (d *InputGamepad) Axis(axis int) util.RawValue {
+	if d.virtual != nil {
+		d.virtual.mu.RLock()
+		defer d.virtual.mu.RUnlock()
+		if axis < 0 || axis >= len(d.virtual.axes) {
+			return util.ZeroRaw
+		}
+		return d.virtual.axes[axis]
+	}
+
 	return util.RawValue(d.Joy.Axis(axis))
 }
 
 func (d *InputGamepad) Button(button int) util.RawValue {
+	if d.virtual != nil {
+		d.virtual.mu.RLock()
+		defer d.virtual.mu.RUnlock()
+		if button < 0 || button >= len(d.virtual.buttons) {
+			return util.ZeroRaw
+		}
+		return d.virtual.buttons[button]
+	}
+
 	return util.RawValue(d.Joy.Button(button))
 }
 
@@ -29,6 +56,15 @@ func (d *InputGamepad) Button(button int) util.RawValue {
 // odd indexes are vertical (up/down). SDL hats are bitmasks, so we convert the bits into
 // the full RawValue range to match axes/buttons semantics.
 func (d *InputGamepad) Hat(hat int) util.RawValue {
+	if d.virtual != nil {
+		d.virtual.mu.RLock()
+		defer d.virtual.mu.RUnlock()
+		if hat < 0 || hat >= len(d.virtual.hats) {
+			return util.ZeroRaw
+		}
+		return d.virtual.hats[hat]
+	}
+
 	physicalHat := hat / 2
 	axisComponent := hat % 2
 
@@ -58,21 +94,41 @@ func (d *InputGamepad) Hat(hat int) util.RawValue {
 }
 
 func (d *InputGamepad) Close() {
-	d.Joy.Close()
+	if d.Joy != nil {
+		d.Joy.Close()
+	}
 }
 
 func (d *InputGamepad) InstanceId() int32 {
+	if d.Joy == nil {
+		return 0
+	}
 	return int32(d.Joy.InstanceID())
 }
 func (d *InputGamepad) Axes() int32 {
+	if d.virtual != nil {
+		d.virtual.mu.RLock()
+		defer d.virtual.mu.RUnlock()
+		return int32(len(d.virtual.axes))
+	}
 	return int32(d.Joy.NumAxes())
 }
 
 func (d *InputGamepad) Buttons() int32 {
+	if d.virtual != nil {
+		d.virtual.mu.RLock()
+		defer d.virtual.mu.RUnlock()
+		return int32(len(d.virtual.buttons))
+	}
 	return int32(d.Joy.NumButtons())
 }
 
 func (d *InputGamepad) Hats() int32 {
+	if d.virtual != nil {
+		d.virtual.mu.RLock()
+		defer d.virtual.mu.RUnlock()
+		return int32(len(d.virtual.hats))
+	}
 	return int32(d.Joy.NumHats()) * 2
 }
 
@@ -82,6 +138,41 @@ func NewDevice(joy *sdl.Joystick) InputGamepad {
 		Name: joy.Name(),
 		Joy:  joy,
 	}
+}
+
+func NewVirtualDevice(id, name string, axesCount, buttonsCount, hatsCount int) *InputGamepad {
+	if axesCount < 0 {
+		axesCount = 0
+	}
+	if buttonsCount < 0 {
+		buttonsCount = 0
+	}
+	if hatsCount < 0 {
+		hatsCount = 0
+	}
+
+	return &InputGamepad{
+		Id:   id,
+		Name: name,
+		virtual: &virtualState{
+			axes:    make([]util.RawValue, axesCount),
+			buttons: make([]util.RawValue, buttonsCount),
+			hats:    make([]util.RawValue, hatsCount),
+		},
+	}
+}
+
+func (d *InputGamepad) SetVirtualAxes(values []util.RawValue) {
+	if d.virtual == nil {
+		return
+	}
+	d.virtual.mu.Lock()
+	defer d.virtual.mu.Unlock()
+	n := len(d.virtual.axes)
+	if len(values) < n {
+		n = len(values)
+	}
+	copy(d.virtual.axes[:n], values[:n])
 }
 
 type FakeInputGamepad InputGamepad

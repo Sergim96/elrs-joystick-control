@@ -5,10 +5,12 @@
 package http
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	ac "github.com/kaack/elrs-joystick-control/pkg/audio"
+	bt "github.com/kaack/elrs-joystick-control/pkg/headtrackerbt"
 	"github.com/kaack/elrs-joystick-control/webapp"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -18,6 +20,7 @@ import (
 	"gopkg.in/tomb.v2"
 
 	"net/http"
+	"time"
 )
 
 type Controller struct {
@@ -115,7 +118,9 @@ func (c *Controller) Start() (err error) {
 
 	c.httpTomb.Go(func() error {
 		<-c.httpTomb.Dying()
-		if err := c.echo.Shutdown(nil); err != nil {
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := c.echo.Shutdown(shutdownCtx); err != nil {
 			return err
 		}
 		return nil
@@ -126,7 +131,7 @@ func (c *Controller) Start() (err error) {
 
 func (c *Controller) Stop() (err error) {
 	if c.httpTomb == nil || !c.httpTomb.Alive() {
-		return errors.New("http is not started")
+		return nil
 	}
 
 	c.httpTomb.Kill(nil)
@@ -144,6 +149,9 @@ func (c *Controller) Quit() {
 
 func (c *Controller) registerRoutes(server *echo.Echo) {
 	server.GET("/api/audio/messages", c.getAudioMessages)
+	server.GET("/api/bluetooth/devices", c.getBluetoothDevices)
+	server.POST("/api/bluetooth/scan", c.scanBluetoothDevices)
+	server.POST("/api/bluetooth/connect", c.connectBluetoothDevice)
 }
 
 func (c *Controller) getAudioMessages(ctx echo.Context) error {
@@ -155,4 +163,56 @@ func (c *Controller) getAudioMessages(ctx echo.Context) error {
 		}
 	}
 	return ctx.JSON(http.StatusOK, map[string][]string{"files": files})
+}
+
+func (c *Controller) getBluetoothDevices(ctx echo.Context) error {
+	return ctx.JSON(http.StatusOK, bt.DefaultManager.Snapshot())
+}
+
+func (c *Controller) scanBluetoothDevices(ctx echo.Context) error {
+	type scanReq struct {
+		Seconds int `json:"seconds"`
+	}
+
+	req := scanReq{Seconds: 6}
+	_ = ctx.Bind(&req)
+	if req.Seconds <= 0 {
+		req.Seconds = 6
+	}
+	if req.Seconds > 30 {
+		req.Seconds = 30
+	}
+
+	scanCtx, cancel := context.WithTimeout(ctx.Request().Context(), time.Duration(req.Seconds+5)*time.Second)
+	defer cancel()
+
+	state := bt.DefaultManager.Scan(scanCtx, time.Duration(req.Seconds)*time.Second)
+	if state.LastScanError != "" {
+		return ctx.JSON(http.StatusBadGateway, state)
+	}
+	return ctx.JSON(http.StatusOK, state)
+}
+
+func (c *Controller) connectBluetoothDevice(ctx echo.Context) error {
+	type connectReq struct {
+		Address string `json:"address"`
+	}
+
+	var req connectReq
+	if err := ctx.Bind(&req); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+	}
+	if req.Address == "" {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "address is required"})
+	}
+
+	state, ok := bt.DefaultManager.Select(req.Address)
+	if !ok {
+		return ctx.JSON(http.StatusNotFound, map[string]any{
+			"error": "device not found in scanned list",
+			"state": state,
+		})
+	}
+
+	return ctx.JSON(http.StatusOK, state)
 }

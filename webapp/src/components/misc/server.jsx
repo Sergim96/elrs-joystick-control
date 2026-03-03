@@ -64,6 +64,66 @@ export const getAudioMessages = async function () {
     return payload.files.filter(file => typeof file === "string");
 };
 
+export const getBluetoothDevices = async function () {
+    if (isMockBackend()) {
+        return {devices: [], selected: null};
+    }
+
+    let response = await fetch(`${getServerUrl()}/api/bluetooth/devices`, {
+        headers: {"Accept": "application/json"}
+    });
+
+    if (!response.ok) {
+        throw new Error(`failed to load bluetooth devices. status ${response.status}`);
+    }
+
+    return response.json();
+};
+
+export const scanBluetoothDevices = async function (seconds = 6) {
+    if (isMockBackend()) {
+        return {devices: [], selected: null};
+    }
+
+    let response = await fetch(`${getServerUrl()}/api/bluetooth/scan`, {
+        method: "POST",
+        headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({seconds}),
+    });
+
+    let payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+        throw new Error(payload?.lastScanError || payload?.error || `bluetooth scan failed. status ${response.status}`);
+    }
+
+    return payload;
+};
+
+export const connectBluetoothDevice = async function (address) {
+    if (isMockBackend()) {
+        return {devices: [], selected: {address, name: "Mock Device"}};
+    }
+
+    let response = await fetch(`${getServerUrl()}/api/bluetooth/connect`, {
+        method: "POST",
+        headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({address}),
+    });
+
+    let payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+        throw new Error(payload?.error || `bluetooth connect selection failed. status ${response.status}`);
+    }
+
+    return payload;
+};
+
 
 export const setConfig = async function (config) {
     let client = getClient(getServerUrl(), null, null);

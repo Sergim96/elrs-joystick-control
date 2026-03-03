@@ -37,6 +37,17 @@ func (c *Controller) Gamepad(id string) (*InputGamepad, bool) {
 	return res, ok
 }
 
+func (c *Controller) UpsertGamepad(device *InputGamepad) {
+	if device == nil {
+		return
+	}
+	if c.Gamepads == nil {
+		c.Gamepads = map[string]*InputGamepad{}
+	}
+	c.Gamepads[device.Id] = device
+	c.AlertDeviceChan()
+}
+
 func (c *Controller) Init() (err error) {
 	if err = sdl.Init(sdl.INIT_GAMECONTROLLER); err != nil {
 		return err

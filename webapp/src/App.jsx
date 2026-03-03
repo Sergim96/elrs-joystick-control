@@ -20,6 +20,7 @@ import GenericPage from "./components/pages/misc/GenericPage";
 import SettingsPage from "./components/pages/SettingsPage";
 import HomePage from "./components/pages/HomePage";
 import GamepadsPage from "./components/pages/GamepadsPage";
+import BluetoothDevicesPage from "./components/pages/BluetoothDevicesPage";
 import TransmittersPage from "./components/pages/TransmittersPage";
 import ExpressLRSSettingsPage from "./components/pages/ExpressLRSSettingsPage";
 import {SnackbarProvider} from "notistack";
@@ -85,6 +86,8 @@ export default function App() {
                                       icon={TransmittersPage.menuIcon}/>
                             <MenuItem key={GamepadsPage.id} id={GamepadsPage.id} label={GamepadsPage.title}
                                       icon={GamepadsPage.menuIcon}/>
+                            <MenuItem key={BluetoothDevicesPage.id} id={BluetoothDevicesPage.id} label={BluetoothDevicesPage.title}
+                                      icon={BluetoothDevicesPage.menuIcon}/>
                             <MenuItem key={InputsConfigPage.id} id={InputsConfigPage.id} label={InputsConfigPage.title}
                                       icon={InputsConfigPage.menuIcon}/>
                             <Divider/>
@@ -112,6 +115,10 @@ export default function App() {
                     case GamepadsPage.id:
                         return <GenericPage title={GamepadsPage.title}>
                             <GamepadsPage/>
+                        </GenericPage>
+                    case BluetoothDevicesPage.id:
+                        return <GenericPage title={BluetoothDevicesPage.title}>
+                            <BluetoothDevicesPage/>
                         </GenericPage>
                     case TransmittersPage.id:
                         return <GenericPage title={TransmittersPage.title}>
